@@ -8,7 +8,7 @@ const Logout = (props) => {
 
   const handleLogout = async () => {
     try {
-      await auth.signOut(); // Faz logout usando o Firebase
+      await auth.signOut();
     } catch (error) {
       console.error("Erro ao fazer logout: ", error);
     }
@@ -16,7 +16,7 @@ const Logout = (props) => {
 
   return (
     <Modal
-      isOpen={isOpen} // Use a prop isOpen para controlar a visibilidade
+      isOpen={isOpen}
       className="modal-dialog-centered modal-danger"
       contentClassName="bg-gradient-danger"
     >

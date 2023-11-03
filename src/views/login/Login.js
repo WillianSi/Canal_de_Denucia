@@ -1,9 +1,7 @@
-import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { auth } from "services/firebaseConfig";
-import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
+import React, { useState } from "react";
 import Auth from "layouts/Auth.js";
-import AdminLayout from "layouts/Admin.js";
+import { Navigate } from "react-router-dom";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 import {
   Alert,
   Button,
@@ -16,78 +14,68 @@ import {
   InputGroupAddon,
   InputGroupText,
   InputGroup,
-  Row,
   Col,
 } from "reactstrap";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [signInWithEmailAndPassword, user, loading, error] =
-    useSignInWithEmailAndPassword(auth);
 
-  const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/i;
-  const isFormValid = password.length >= 6 && emailPattern.test(email);
-
+  const [redirectTo, setRedirectTo] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
   const [alertColor, setAlertColor] = useState("");
   const [alertTitle, setAlertTitle] = useState("");
-
-  const showErrorMessage = (message) => {
-    setErrorMessage(message);
-    setShowAlert(true);
-    setTimeout(() => {
-      setShowAlert(false);
-    }, 3000);
-  };
+  const [errorMessage, setErrorMessage] = useState("");
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleSignIn = (e) => {
-    e.preventDefault();
+  const handleSignIn = async () => {
+    try {
+      const db = getFirestore();
+      const userDoc = doc(db, "users", username);
+      const userDocSnapshot = await getDoc(userDoc);
 
-    if (isFormValid) {
-      signInWithEmailAndPassword(email, password);
-    }  else {
+      if (userDocSnapshot.exists()) {
+        const userData = userDocSnapshot.data();
+        if (userData.password === password) {
+          setRedirectTo(`/admin/index/${userData.incidentId}`);
+        } else {
+          setAlertColor("danger");
+          setAlertTitle("Erro:");
+          showErrorMessage("Senha incorreta.");
+        }
+      } else {
+        setAlertColor("danger");
+        setAlertTitle("Erro:");
+        showErrorMessage("Usuário não encontrado.");
+      }
+    } catch (error) {
       setAlertColor("danger");
-      setAlertTitle("Erro!");
-      showErrorMessage("Por favor, insira um email válido e uma senha com pelo menos 6 caracteres.");
+      setAlertTitle("Erro:");
+      showErrorMessage("Erro ao autenticar o usuário.");
     }
   };
 
-  useEffect(() => {
-    if (error) {
-      setAlertColor("danger");
-      setAlertTitle("Erro!");
-      showErrorMessage("E-mail ou senha incorretos.");
-    }
-  }, [error]);
-
-  useEffect(() => {
-    if (loading) {
-      setAlertColor("info");
-      setAlertTitle("Aguarde:");
-      showErrorMessage("Conectando...");
-    }
-  }, [loading]);
-
-  if (user) {
-    return <AdminLayout />;
-  }
+  const showErrorMessage = (message) => {
+    setErrorMessage(message);
+    setShowAlert(true);
+  };
 
   return (
     <>
+      {redirectTo && <Navigate to={redirectTo} />}
       <Auth>
         <Col lg="5" md="7">
           <Card className="bg-secondary shadow border-0">
             <CardHeader className="bg-transparent">
               <div className="header-body text-center">
                 <h1 className="text-muted">Bem-vindo(a)!</h1>
-                <p className="text-muted">Faça login para continuar!</p>
+                <p className="text-muted">
+                  Faça login com o usuário e senha recebidos para continuar!
+                </p>
                 {showAlert && (
                   <Alert color={alertColor}>
                     <strong>{alertTitle}</strong> {errorMessage}
@@ -101,14 +89,12 @@ const Login = () => {
                   <InputGroup className="input-group-alternative">
                     <InputGroupAddon addonType="prepend">
                       <InputGroupText>
-                        <i className="ni ni-email-83" />
+                        <i className="ni ni-circle-08" />
                       </InputGroupText>
                     </InputGroupAddon>
                     <Input
-                      placeholder="Email"
-                      type="email"
-                      autoComplete="new-email"
-                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Usuário"
+                      onChange={(e) => setUsername(e.target.value)}
                     />
                   </InputGroup>
                 </FormGroup>
@@ -145,13 +131,6 @@ const Login = () => {
               </Form>
             </CardBody>
           </Card>
-          <Row className="mt-3">
-            <Col xs="6">
-              <Link to="/reset" className="text-light">
-                <small>Esqueceu sua senha?</small>
-              </Link>
-            </Col>
-          </Row>
         </Col>
       </Auth>
     </>

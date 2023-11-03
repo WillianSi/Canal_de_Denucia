@@ -7,10 +7,9 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import "assets/scss/argon-dashboard-react.scss";
 
 import AdminLayout from "layouts/Admin.js";
-import SeeMore from "views/complaints/SeeMore.js";
+import Home from "views/login/Home.js";
 import Login from "views/login/Login.js";
-import Register from "views/login/Register.js";
-import Reset from "views/login/PasswordReset.js";
+import Question from "views/questions/Forms.js";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -18,15 +17,13 @@ root.render(
   <BrowserRouter>
     <Routes>
       {/* Rota para a página de login como rota raiz */}
-      <Route path="/*" element={<Login />} />
-      {/* Caminho para a página de inscrição */}
-      <Route path="/register" element={<Register />} />
-      {/* Caminho para a página de redefinição de senha */}
-      <Route path="/reset" element={<Reset />} />
+      <Route path="/*" element={<Home />} />
+      {/* Caminho para a página de Login */}
+      <Route path="/login" element={<Login />} />
+      {/* Caminho para a página de formulario */}
+      <Route path="/question" element={<Question />} />
       {/* Rota para o layout de admin */}
       <Route path="/admin/*" element={<AdminLayout />} />
-      {/* Rota para a página "SeeMore" no layout de admin */}
-      <Route path="/admin/SeeMore/:id" element={<SeeMore />} />
       {/* Rota padrão redireciona para a página de login */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

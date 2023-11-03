@@ -1,19 +1,24 @@
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../services/firebaseConfig";
+import React, { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 
-function AuthenticatedLayout({ children }) {
-  const [user] = useAuthState(auth);
-  const navigate = useNavigate();
+const AuthenticatedLayout = ({ children }) => {
+  const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/", { replace: true });
+    const userToken = localStorage.getItem("userToken");
+    if (userToken) {
+      setAuthenticated(true);
+    } else {
+      setAuthenticated(false);
     }
-  }, [user, navigate]);
+  }, []);
 
-  return <div>{children}</div>;
-}
+  return authenticated ? (
+    <>{children}
+    </>
+  ) : (
+    <Navigate to="/login" />
+  );
+};
 
 export default AuthenticatedLayout;

@@ -1,193 +1,433 @@
-import React, { useEffect, useState } from "react";
-import Chart from "chart.js";
-import { BsFillTrashFill, BsFillPencilFill } from "react-icons/bs";
+import React, { useState, useEffect, useRef } from "react";
+import { MdDriveFolderUpload } from "react-icons/md";
+import loadingGif from "../../img/loading.gif";
+import { format } from "date-fns";
+import Auth from "layouts/Auth.js";
+import End from "./End.js";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  getStorage
+} from "firebase/storage";
+import {
+  addDoc,
+  query, 
+  where,
+  getFirestore,
+  collection,
+  getDocs,
+  setDoc,
+  doc,
+  getDoc
+} from "firebase/firestore";
 import {
   Alert,
   Button,
-  Col,
   Card,
   CardHeader,
-  Table,
-  Container,
+  CardBody,
+  FormGroup,
+  Form,
+  Input,
   Row,
+  Col,
 } from "reactstrap";
-import { chartOptions, parseOptions } from "variables/charts.js";
-import Header from "components/Headers/Header.js";
-import FromQuestions from "./FromQuestions.js";
-import ExcluirQuestion from "./ExcluirQuestion.js";
-import {
-  collection,
-  getDocs,
-  getFirestore,
-  onSnapshot,
-} from "firebase/firestore";
-import { app } from "services/firebaseConfig.js";
 
-const Forms = (props) => {
+const db = getFirestore();
+const storage = getStorage();
+
+const Forms = () => {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [questions, setQuestions] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedQuestion, setSelectedQuestion] = useState(null);
-  const [excluirModalOpen, setExcluirModalOpen] = useState(false);
-  const [selectedQuestionId, setSelectedQuestionId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [answers, setAnswers] = useState({});
+  const fileInput = useRef(null);
+  const [generatedUsername, setGeneratedUsername] = useState("");
+  const [generatedPassword, setGeneratedPassword] = useState("");
 
+  const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isModalOpen, setModalOpen] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [alertColor, setAlertColor] = useState("");
   const [alertTitle, setAlertTitle] = useState("");
 
-  const handleAlert = (message, color, title) => {
+  const openModal = () => {
+    setModalOpen(true);
+  };
+
+  const showErrorMessage = (message) => {
     setErrorMessage(message);
-    setAlertColor(color);
-    setAlertTitle(title);
     setShowAlert(true);
     setTimeout(() => {
       setShowAlert(false);
     }, 3000);
   };
 
-  if (window.Chart) {
-    parseOptions(Chart, chartOptions());
-  }
-
-  const toggleModal = (question) => {
-    setSelectedQuestion(question);
-    setModalOpen(!modalOpen);
+  const previousQuestion = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
+    }
   };
 
-  const toggleEditModal = (question) => {
-    setSelectedQuestion(question);
-    setEditModalOpen(!editModalOpen);
+  const nextQuestion = () => {
+    const currentAnswer = answers[questions[currentQuestion].id];
+
+    if (
+      (questions[currentQuestion].tipo === "Dropdown" &&
+        currentAnswer.selectedOption !== "") ||
+      (questions[currentQuestion].tipo === "Arquivo" &&
+        currentAnswer.file !== null) ||
+      (questions[currentQuestion].tipo === "PerguntaAberta" &&
+        currentAnswer.answer !== "")
+    ) {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+      }
+    } else {
+      setAlertColor("danger");
+      setAlertTitle("Atenção!");
+      showErrorMessage("Preencha esta pergunta antes de prosseguir.");
+    }
   };
 
-  const toggleExcluirModal = (questionId) => {
-    setExcluirModalOpen(!excluirModalOpen);
-    setSelectedQuestionId(questionId);
+  const handleAnswerChange = (event) => {
+    const updatedAnswers = { ...answers };
+    updatedAnswers[questions[currentQuestion].id].answer = event.target.value;
+    setAnswers(updatedAnswers);
   };
 
-  const fetchFirestoreData = async () => {
+  const handleDropdownChange = (event) => {
+    const updatedAnswers = { ...answers };
+    updatedAnswers[questions[currentQuestion].id].selectedOption = event.target.value;
+    setAnswers(updatedAnswers);
+  };
+
+  const handleFileChange = (event) => {
+    const updatedAnswers = { ...answers };
+    updatedAnswers[questions[currentQuestion].id].file = event.target.files[0];
+    setAnswers(updatedAnswers);
+  };
+
+  const uploadFile = async (file) => {
+    const storageRef = ref(storage, "documentos/" + file.name);
+  
     try {
-      const db = getFirestore(app);
-      const querySnapshot = await getDocs(collection(db, "forms"));
-      const questionsData = [];
-      querySnapshot.forEach((doc) => {
-        const questionData = {
-          id: doc.id,
-          ...doc.data(),
-        };
-        questionsData.push(questionData);
-      });
-      setQuestions(questionsData);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      return downloadURL;
     } catch (error) {
-      console.error("Erro ao buscar dados do Firestore: ", error);
+      setAlertColor("danger");
+      setAlertTitle("Erro!");
+      showErrorMessage("Não foi possível subir o arquivo.");
     }
   };
 
   useEffect(() => {
-    fetchFirestoreData();
-  }, []);
+    const fetchQuestions = async () => {
+      try {
+        const questionsRef = collection(db, "forms");
+        const querySnapshot = await getDocs(questionsRef);
+        const questionsData = [];
+        querySnapshot.forEach((doc) => {
+          questionsData.push({
+            id: doc.id,
+            ...doc.data(),
+          });
+        });
+        setQuestions(questionsData);
+        setLoading(false);
 
-  useEffect(() => {
-    const db = getFirestore(app);
-    const unsubscribe = onSnapshot(collection(db, "forms"), (snapshot) => {
-      const questionsData = [];
-      snapshot.forEach((doc) => {
-        const questionData = {
-          id: doc.id,
-          ...doc.data(),
-        };
-        questionsData.push(questionData);
-      });
-      setQuestions(questionsData);
-    });
-
-    return () => {
-      unsubscribe();
+        const initialAnswers = {};
+        questionsData.forEach((question) => {
+          initialAnswers[question.id] = {
+            answer: "",
+            selectedOption: "",
+            file: null,
+          };
+        });
+        setAnswers(initialAnswers);
+      } catch (error) {
+        setAlertColor("danger");
+        setAlertTitle("Erro!");
+        showErrorMessage("Erro ao buscar perguntas.");
+        setLoading(false);
+      }
     };
+    fetchQuestions();
   }, []);
+
+  const generateUniqueReference = async () => {
+    let reference;
+    let isUnique = false;
+  
+    while (!isUnique) {
+      reference = Math.floor(1000 + Math.random() * 9000);
+      const querySnapshot = await getDocs(query(collection(db, 'incident'), where('referencia', '==', reference)));
+      if (querySnapshot.empty) {
+        isUnique = true;
+      }
+    }
+  
+    return reference.toString();
+  };
+
+  const generateUser = async (incidentId, setUsername, setPassword) => {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let username = "";
+    let password = "";
+
+    // Gerar um nome de usuário único
+    let isUnique = false;
+    while (!isUnique) {
+      for (let i = 0; i < 5; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        username += characters.charAt(randomIndex);
+      }
+
+      // Verificar se o nome de usuário já existe
+      const userDoc = await getDoc(doc(db, "users", username));
+      if (!userDoc.exists()) {
+        isUnique = true;
+      }
+    }
+
+    for (let i = 0; i < 8; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      password += characters.charAt(randomIndex);
+    }
+
+    try {
+      // Salvar o usuário fictício com o nome de usuário único
+      const userRef = doc(db, "users", username);
+      await setDoc(userRef, { password, incidentId });
+
+      setUsername(username);
+      setPassword(password);
+    } catch (error) {
+      setAlertColor("danger");
+      setAlertTitle("Erro!");
+      showErrorMessage("Erro ao salvar o usuário!");
+    }
+  };
+
+  const submitAnswers = async () => {
+    setIsSaving(true);
+  
+    const currentDate = new Date();
+    const formattedDate = format(currentDate, "dd/MM/yyyy");
+  
+    const uploadAllFilesPromises = [];
+  
+    for (const question of questions) {
+      const answer = answers[question.id];
+      if (question.tipo === "Arquivo" && answer.file) {
+        const uploadPromise = uploadFile(answer.file);
+        uploadAllFilesPromises.push(uploadPromise);
+        uploadPromise.then((downloadURL) => {
+          const updatedAnswers = { ...answers };
+          updatedAnswers[question.id].file = downloadURL;
+          setAnswers(updatedAnswers);
+        });
+      }
+    }
+  
+    try {
+      await Promise.all(uploadAllFilesPromises);
+
+      const reference = await generateUniqueReference();
+
+      const formData = {
+        data_criacao: formattedDate,
+        pergunta: questions.map((question) => question.titulo),
+        referencia: reference,
+        resposta: questions.map((question) => {
+          if (question.tipo === "Arquivo") {
+            return answers[question.id].file || "No file available";
+          }
+          if (question.tipo === "Dropdown") {
+            return answers[question.id].selectedOption;
+          }
+          return answers[question.id].answer;
+        }),
+        status: 0,
+      };
+  
+      const incidentRef = await addDoc(collection(db, "incident"), formData);
+  
+      await generateUser(incidentRef.id, setGeneratedUsername, setGeneratedPassword);
+  
+      setIsSaved(true);
+      setIsSaving(false);
+  
+    } catch (error) {
+      setIsSaving(false);
+    }
+  };
+  
+  
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <img
+          src={loadingGif}
+          alt="Carregando..."
+          style={{
+            width: "100px",
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <>
-      <Header />
-      <Container className="mt--7" fluid>
-        <Row>
-          <div className="col">
-            <Card className="shadow">
-              <CardHeader className="border-0 d-flex justify-content-between align-items-center">
-                <h3 className="mb-0">Formulário</h3>
-                <Button color="info" onClick={() => toggleModal(null)}>
-                  Adicionar Pregunta +
-                </Button>
-              </CardHeader>
-              <Col xs="8">
-                {showAlert && (
-                  <Alert color={alertColor} className="mt-2">
+      <Auth>
+        <Col lg="5" md="7">
+          <Card className="bg-secondary shadow border-0">
+            <CardHeader className="bg-transparent">
+              <div className="header-body text-center">
+              {showAlert && (
+                  <Alert color={alertColor}>
                     <strong>{alertTitle}</strong> {errorMessage}
                   </Alert>
                 )}
-              </Col>
-              <Table className="align-items-center table-flush" responsive>
-                <thead className="text-center thead-light">
-                  <tr>
-                    <th scope="col">Pergunta</th>
-                    <th scope="col">Tipo</th>
-                    <th scope="col">Ação</th>
-                  </tr>
-                </thead>
-                <tbody className="text-center">
-                  {questions.map((question, index) => (
-                    <tr key={index}>
-                      <td>{question.titulo}</td>
-                      <td>{question.tipo}</td>
-                      <td className="text-center align-middle">
-                        <Button
-                          color="default"
-                          onClick={() => toggleEditModal(question)}
-                          size="sm"
-                          className="bg-transparent border-0"
+                <p className="text-muted text-justify">
+                  {questions[currentQuestion].titulo}
+                </p>
+              </div>
+            </CardHeader>
+            <CardBody className="px-lg-5 py-lg-5">
+              <Form role="form">
+                <Row>
+                  <Col md="10" className="mx-auto text-center">
+                    <FormGroup>
+                      {questions[currentQuestion].tipo === "Dropdown" && (
+                        <Input
+                          type="select"
+                          className="form-control"
+                          value={
+                            answers[questions[currentQuestion].id]
+                              .selectedOption
+                          }
+                          onChange={handleDropdownChange}
                         >
-                          <BsFillPencilFill
-                            style={{ color: "#525f7f", fontSize: "15px" }}
+                          <option value="">Selecione uma opção</option>
+                          {questions[currentQuestion].questoes.map(
+                            (opcao, opcaoIndex) => (
+                              <option key={opcaoIndex} value={opcao}>
+                                {opcao}
+                              </option>
+                            )
+                          )}
+                        </Input>
+                      )}
+                      {questions[currentQuestion].tipo === "Arquivo" && (
+                        <div>
+                          <div className="input-group">
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={
+                                answers[questions[currentQuestion].id].file
+                                  ? answers[questions[currentQuestion].id].file
+                                      .name
+                                  : "Nenhum arquivo escolhido"
+                              }
+                              readOnly
+                            />
+                            <div className="input-group-append">
+                              <Button
+                                color="primary"
+                                type="button"
+                                onClick={() => fileInput.current.click()}
+                              >
+                                <MdDriveFolderUpload className="larger-icon" />{" "}
+                              </Button>
+                            </div>
+                          </div>
+                          <input
+                            type="file"
+                            style={{ display: "none" }}
+                            ref={fileInput}
+                            onChange={handleFileChange}
                           />
-                        </Button>
-                        <Button
-                          color="default"
-                          onClick={() => {
-                            toggleExcluirModal(question.id);
-                          }}
-                          size="sm"
-                          className="bg-transparent border-0"
-                        >
-                          <BsFillTrashFill
-                            style={{ color: "#525f7f", fontSize: "15px" }}
-                          />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Card>
-          </div>
-        </Row>
-      </Container>
-      <FromQuestions
-        isOpen={modalOpen}
-        onClose={() => toggleModal(null)}
-        question={selectedQuestion}
+                        </div>
+                      )}
+
+                      {questions[currentQuestion].tipo === "PerguntaAberta" && (
+                        <textarea
+                          className="form-control"
+                          value={answers[questions[currentQuestion].id].answer}
+                          onChange={handleAnswerChange}
+                        ></textarea>
+                      )}
+                    </FormGroup>
+                    <Row>
+                      <Col md="6">
+                        <FormGroup>
+                          <Button
+                            color="primary"
+                            type="button"
+                            onClick={previousQuestion}
+                            disabled={currentQuestion === 0}
+                            block
+                          >
+                            Voltar
+                          </Button>
+                        </FormGroup>
+                      </Col>
+                      <Col md="6">
+                        <FormGroup>
+                          {currentQuestion === questions.length - 1 ? (
+                            <Button
+                              color="danger"
+                              type="button"
+                              block
+                              onClick={openModal}
+                            >
+                              Denúnciar
+                            </Button>
+                          ) : (
+                            <Button
+                              color="primary"
+                              type="button"
+                              onClick={nextQuestion}
+                              block
+                            >
+                              Próximo
+                            </Button>
+                          )}
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                  </Col>
+                </Row>
+              </Form>
+            </CardBody>
+          </Card>
+        </Col>
+      </Auth>
+      {isModalOpen && (
+        <End
+        isOpen={isModalOpen}
+        toggle={() => setModalOpen(false)}
+        submitAnswers={submitAnswers}
+        isSaving={isSaving}
+        isSaved={isSaved}
+        username={generatedUsername}
+        password={generatedPassword}
       />
-      <FromQuestions
-        isOpen={editModalOpen}
-        onClose={() => toggleEditModal(null)}
-        question={selectedQuestion}
-        handleAlert={handleAlert}
-      />
-      <ExcluirQuestion
-        isOpen={excluirModalOpen}
-        toggle={toggleExcluirModal}
-        questionId={selectedQuestionId}
-        handleAlert={handleAlert}
-      />
+      )}
     </>
   );
 };
