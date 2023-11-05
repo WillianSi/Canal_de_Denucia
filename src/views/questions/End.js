@@ -101,14 +101,14 @@ const End = (props) => {
                 Copiar
               </Button>
               <Link to="/login">
-              <Button
-                className="btn-white ml-auto"
-                color="default"
-                type="button"
-                onClick={toggle}
-              >
-                Logar
-              </Button>
+                <Button
+                  className="btn-white ml-auto"
+                  color="default"
+                  type="button"
+                  onClick={toggle}
+                >
+                  Logar
+                </Button>
               </Link>
             </div>
           ) : (
@@ -125,7 +125,8 @@ const End = (props) => {
       <div className="modal-footer">
         {isSaving ? (
           <Button className="btn-white" color="default" type="button" disabled>
-            Aguarde! Poderá demorar um pouco para salvar arquivos mais pesados...
+            Aguarde! Poderá demorar um pouco para salvar arquivos mais
+            pesados...
           </Button>
         ) : isSaved ? null : (
           <>

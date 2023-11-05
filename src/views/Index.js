@@ -5,6 +5,7 @@ import { app } from "services/firebaseConfig.js";
 import { chartOptions, parseOptions } from "variables/charts.js";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import Header from "components/Headers/HeaderHome.js";
+import AuthenticatedLayout from "services/AuthenticatedLayout.js";
 import {
   Col,
   CardBody,
@@ -72,6 +73,7 @@ const Index = (props) => {
 
   return (
     <>
+    <AuthenticatedLayout>
       <Header />
       <Container className="mt--7" fluid>
         <Row>
@@ -173,6 +175,7 @@ const Index = (props) => {
           </Col>
         </Row>
       </Container>
+      </AuthenticatedLayout>
     </>
   );
 };

@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { NavLink as NavLinkRRD, Link } from "react-router-dom";
-// biblioteca nodejs para definir propriedades para componentes
 import { PropTypes } from "prop-types";
-
 import Logout from '../../views/login/Logout.js';
-
-// reactstrap componentes
 import {
   Button,
   Collapse,
@@ -26,15 +22,12 @@ import {
 
 const Sidebar = (props) => {
   const [collapseOpen, setCollapseOpen] = useState();
-  // alterna o colapse entre aberto e fechado (verdadeiro/falso)
   const toggleCollapse = () => {
     setCollapseOpen((data) => !data);
   };
-  //fecha o colapse
   const closeCollapse = () => {
     setCollapseOpen(false);
   };
-  //cria os links que aparecem no menu esquerdo/barra lateral
   const createLinks = (routes) => {
     return routes.map((prop, key) => {
       return (
@@ -97,9 +90,7 @@ const Sidebar = (props) => {
             />
           </NavbarBrand>
         ) : null}
-        {/* Collapse */}
         <Collapse navbar isOpen={collapseOpen}>
-          {/* Collapse header */}
           <div className="navbar-collapse-header d-md-none">
             <Row>
               {logo ? (
@@ -144,7 +135,6 @@ const Sidebar = (props) => {
               </InputGroupAddon>
             </InputGroup>
           </Form>
-          {/* Navegação */}
           <Nav navbar>
           {createLinks(routes)}
           <NavItem key="logout" className="mx-5 mt-3">
@@ -160,7 +150,6 @@ const Sidebar = (props) => {
 
         </Collapse>
       </Container>
-      {/* Renderize o componente Logout dentro do Sidebar */}
       <Logout isOpen={isLogoutModalOpen} toggle={toggleLogoutModal} />
     </Navbar>
   );
@@ -171,7 +160,6 @@ Sidebar.defaultProps = {
 };
 
 Sidebar.propTypes = {
-  // links que serão exibidos dentro do componente
   routes: PropTypes.arrayOf(PropTypes.object),
   logo: PropTypes.shape({
     innerLink: PropTypes.string,

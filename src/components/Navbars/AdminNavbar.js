@@ -40,12 +40,12 @@ const AdminNavbar = (props) => {
               <span className="avatar avatar-sm rounded-circle">
                 <img
                   alt="..."
-                  src={require("../../assets/img/theme/MZZI-icon.jpeg")}
+                  src={require("../../assets/img/brand/logo.jpg")}
                 />
               </span>
               <Media className="ml-2 d-none d-lg-block">
                 <span className="mb-0 text-sm font-weight-bold">
-                  MZZI thinks Digital
+                Grupo Dínamo
                 </span>
               </Media>
             </Media>

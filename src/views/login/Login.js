@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Auth from "layouts/Auth.js";
 import { Navigate } from "react-router-dom";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
+import logoImg from '../../assets/img/theme/logo.png';
 import {
   Alert,
   Button,
@@ -17,9 +18,12 @@ import {
   Col,
 } from "reactstrap";
 
+import AuthenticatedLayout from "../../services/AuthenticatedLayout.js";
+
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [authenticated, setAuthenticated] = useState(false);
 
   const [redirectTo, setRedirectTo] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -32,6 +36,12 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
+  const imageStyle = {
+    maxWidth: "60%",
+    maxHeight: "100px",
+    marginBottom: "20px",
+  };
+
   const handleSignIn = async () => {
     try {
       const db = getFirestore();
@@ -41,6 +51,7 @@ const Login = () => {
       if (userDocSnapshot.exists()) {
         const userData = userDocSnapshot.data();
         if (userData.password === password) {
+          setAuthenticated(true);
           setRedirectTo(`/admin/index/${userData.incidentId}`);
         } else {
           setAlertColor("danger");
@@ -67,11 +78,15 @@ const Login = () => {
   return (
     <>
       {redirectTo && <Navigate to={redirectTo} />}
+      {authenticated && (
+      <AuthenticatedLayout isAuthenticated={authenticated}/>
+    )}
       <Auth>
         <Col lg="5" md="7">
           <Card className="bg-secondary shadow border-0">
             <CardHeader className="bg-transparent">
               <div className="header-body text-center">
+              <img src={logoImg} alt="Logo" style={imageStyle} />
                 <h1 className="text-muted">Bem-vindo(a)!</h1>
                 <p className="text-muted">
                   Faça login com o usuário e senha recebidos para continuar!

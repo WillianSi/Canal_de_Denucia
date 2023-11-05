@@ -1,25 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MdDriveFolderUpload } from "react-icons/md";
-import loadingGif from "../../img/loading.gif";
+import loadingGif from "../../assets/img/theme/loading.gif";
 import { format } from "date-fns";
 import Auth from "layouts/Auth.js";
 import End from "./End.js";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  getStorage
-} from "firebase/storage";
+import logoImg from "../../assets/img/theme/logo.png";
+import { ref, uploadBytes, getDownloadURL, getStorage } from "firebase/storage";
+import { Link } from "react-router-dom";
 import {
   addDoc,
-  query, 
+  query,
   where,
   getFirestore,
   collection,
   getDocs,
   setDoc,
   doc,
-  getDoc
+  getDoc,
 } from "firebase/firestore";
 import {
   Alert,
@@ -54,6 +51,12 @@ const Forms = () => {
   const [alertColor, setAlertColor] = useState("");
   const [alertTitle, setAlertTitle] = useState("");
 
+  const imageStyle = {
+    maxWidth: "60%",
+    maxHeight: "100px",
+    marginBottom: "20px",
+  };
+
   const openModal = () => {
     setModalOpen(true);
   };
@@ -69,6 +72,8 @@ const Forms = () => {
   const previousQuestion = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1);
+    } else {
+      return <Link to="/home" />;
     }
   };
 
@@ -101,7 +106,8 @@ const Forms = () => {
 
   const handleDropdownChange = (event) => {
     const updatedAnswers = { ...answers };
-    updatedAnswers[questions[currentQuestion].id].selectedOption = event.target.value;
+    updatedAnswers[questions[currentQuestion].id].selectedOption =
+      event.target.value;
     setAnswers(updatedAnswers);
   };
 
@@ -113,7 +119,7 @@ const Forms = () => {
 
   const uploadFile = async (file) => {
     const storageRef = ref(storage, "documentos/" + file.name);
-  
+
     try {
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
@@ -162,32 +168,32 @@ const Forms = () => {
   const generateUniqueReference = async () => {
     let reference;
     let isUnique = false;
-  
+
     while (!isUnique) {
       reference = Math.floor(1000 + Math.random() * 9000);
-      const querySnapshot = await getDocs(query(collection(db, 'incident'), where('referencia', '==', reference)));
+      const querySnapshot = await getDocs(
+        query(collection(db, "incident"), where("referencia", "==", reference))
+      );
       if (querySnapshot.empty) {
         isUnique = true;
       }
     }
-  
+
     return reference.toString();
   };
 
   const generateUser = async (incidentId, setUsername, setPassword) => {
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let username = "";
     let password = "";
 
-    // Gerar um nome de usuário único
     let isUnique = false;
     while (!isUnique) {
       for (let i = 0; i < 5; i++) {
         const randomIndex = Math.floor(Math.random() * characters.length);
         username += characters.charAt(randomIndex);
       }
-
-      // Verificar se o nome de usuário já existe
       const userDoc = await getDoc(doc(db, "users", username));
       if (!userDoc.exists()) {
         isUnique = true;
@@ -200,10 +206,8 @@ const Forms = () => {
     }
 
     try {
-      // Salvar o usuário fictício com o nome de usuário único
       const userRef = doc(db, "users", username);
       await setDoc(userRef, { password, incidentId });
-
       setUsername(username);
       setPassword(password);
     } catch (error) {
@@ -215,12 +219,12 @@ const Forms = () => {
 
   const submitAnswers = async () => {
     setIsSaving(true);
-  
+
     const currentDate = new Date();
     const formattedDate = format(currentDate, "dd/MM/yyyy");
-  
+
     const uploadAllFilesPromises = [];
-  
+
     for (const question of questions) {
       const answer = answers[question.id];
       if (question.tipo === "Arquivo" && answer.file) {
@@ -233,7 +237,7 @@ const Forms = () => {
         });
       }
     }
-  
+
     try {
       await Promise.all(uploadAllFilesPromises);
 
@@ -254,20 +258,22 @@ const Forms = () => {
         }),
         status: 0,
       };
-  
+
       const incidentRef = await addDoc(collection(db, "incident"), formData);
-  
-      await generateUser(incidentRef.id, setGeneratedUsername, setGeneratedPassword);
-  
+
+      await generateUser(
+        incidentRef.id,
+        setGeneratedUsername,
+        setGeneratedPassword
+      );
+
       setIsSaved(true);
       setIsSaving(false);
-  
     } catch (error) {
       setIsSaving(false);
     }
   };
-  
-  
+
   if (loading) {
     return (
       <div
@@ -296,17 +302,18 @@ const Forms = () => {
           <Card className="bg-secondary shadow border-0">
             <CardHeader className="bg-transparent">
               <div className="header-body text-center">
-              {showAlert && (
+                <img src={logoImg} alt="Logo" style={imageStyle} />
+                {showAlert && (
                   <Alert color={alertColor}>
                     <strong>{alertTitle}</strong> {errorMessage}
                   </Alert>
                 )}
-                <p className="text-muted text-justify">
+                <p className="text-dark text-justify">
                   {questions[currentQuestion].titulo}
                 </p>
               </div>
             </CardHeader>
-            <CardBody className="px-lg-5 py-lg-5">
+            <CardBody>
               <Form role="form">
                 <Row>
                   <Col md="10" className="mx-auto text-center">
@@ -321,7 +328,7 @@ const Forms = () => {
                           }
                           onChange={handleDropdownChange}
                         >
-                          <option value="">Selecione uma opção</option>
+                          <option>Selecione uma opção</option>
                           {questions[currentQuestion].questoes.map(
                             (opcao, opcaoIndex) => (
                               <option key={opcaoIndex} value={opcao}>
@@ -369,6 +376,7 @@ const Forms = () => {
                           className="form-control"
                           value={answers[questions[currentQuestion].id].answer}
                           onChange={handleAnswerChange}
+                          rows={5}
                         ></textarea>
                       )}
                     </FormGroup>
@@ -379,10 +387,15 @@ const Forms = () => {
                             color="primary"
                             type="button"
                             onClick={previousQuestion}
-                            disabled={currentQuestion === 0}
                             block
                           >
-                            Voltar
+                            {currentQuestion === 0 ? (
+                              <Link to="/home" style={{ color: "white" }}>
+                                Home
+                              </Link>
+                            ) : (
+                              "Voltar"
+                            )}
                           </Button>
                         </FormGroup>
                       </Col>
@@ -419,14 +432,14 @@ const Forms = () => {
       </Auth>
       {isModalOpen && (
         <End
-        isOpen={isModalOpen}
-        toggle={() => setModalOpen(false)}
-        submitAnswers={submitAnswers}
-        isSaving={isSaving}
-        isSaved={isSaved}
-        username={generatedUsername}
-        password={generatedPassword}
-      />
+          isOpen={isModalOpen}
+          toggle={() => setModalOpen(false)}
+          submitAnswers={submitAnswers}
+          isSaving={isSaving}
+          isSaved={isSaved}
+          username={generatedUsername}
+          password={generatedPassword}
+        />
       )}
     </>
   );

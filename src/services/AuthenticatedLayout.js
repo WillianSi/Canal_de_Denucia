@@ -1,24 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-const AuthenticatedLayout = ({ children }) => {
-  const [authenticated, setAuthenticated] = useState(false);
-
+function AuthenticatedLayout({ children, isAuthenticated }) {
+  const navigate = useNavigate();
+  console.log(isAuthenticated);
   useEffect(() => {
-    const userToken = localStorage.getItem("userToken");
-    if (userToken) {
-      setAuthenticated(true);
-    } else {
-      setAuthenticated(false);
+    if (!isAuthenticated) {
+    //   navigate("/", { replace: false });
     }
-  }, []);
+  }, [isAuthenticated, navigate]);
 
-  return authenticated ? (
-    <>{children}
-    </>
-  ) : (
-    <Navigate to="/login" />
-  );
-};
+  return <div>{children}</div>;
+}
 
 export default AuthenticatedLayout;
