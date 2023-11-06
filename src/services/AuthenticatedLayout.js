@@ -1,14 +1,19 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../services/firebaseConfig";
 
-function AuthenticatedLayout({ children, isAuthenticated }) {
+function AuthenticatedLayout({ children }) {
+  const [user] = useAuthState(auth);
   const navigate = useNavigate();
-  console.log(isAuthenticated);
+
   useEffect(() => {
-    if (!isAuthenticated) {
-    //   navigate("/", { replace: false });
+    if (user && user.isAnonymous) {
+      return;
+    } else {
+      navigate("/", { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [user, navigate]);
 
   return <div>{children}</div>;
 }

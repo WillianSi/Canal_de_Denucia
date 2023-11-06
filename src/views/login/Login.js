@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Auth from "layouts/Auth.js";
 import { Navigate } from "react-router-dom";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getAuth, signInAnonymously } from "firebase/auth";
 import logoImg from '../../assets/img/theme/logo.png';
 import {
   Alert,
@@ -18,12 +19,9 @@ import {
   Col,
 } from "reactstrap";
 
-import AuthenticatedLayout from "../../services/AuthenticatedLayout.js";
-
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [authenticated, setAuthenticated] = useState(false);
 
   const [redirectTo, setRedirectTo] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -51,8 +49,15 @@ const Login = () => {
       if (userDocSnapshot.exists()) {
         const userData = userDocSnapshot.data();
         if (userData.password === password) {
-          setAuthenticated(true);
-          setRedirectTo(`/admin/index/${userData.incidentId}`);
+          const auth = getAuth();
+
+          signInAnonymously(auth)
+            .then((userCredential) => {
+              setRedirectTo(`/admin/index/${userData.incidentId}`);
+            })
+            .catch((error) => {
+              console.error("Anonymous sign-in error", error);
+            });
         } else {
           setAlertColor("danger");
           setAlertTitle("Erro:");
@@ -78,9 +83,6 @@ const Login = () => {
   return (
     <>
       {redirectTo && <Navigate to={redirectTo} />}
-      {authenticated && (
-      <AuthenticatedLayout isAuthenticated={authenticated}/>
-    )}
       <Auth>
         <Col lg="5" md="7">
           <Card className="bg-secondary shadow border-0">
