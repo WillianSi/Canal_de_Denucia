@@ -68,7 +68,7 @@ const Forms = () => {
     )) {
       setAlertColor("danger");
       setAlertTitle("Atenção!");
-      showErrorMessage("Preencha a última pergunta antes de prosseguir.");
+      showErrorMessage("Preencha a pergunta antes de prosseguir.");
     } else {
       setModalOpen(true);
     }
@@ -104,7 +104,7 @@ const Forms = () => {
     ) {
       setAlertColor("danger");
       setAlertTitle("Atenção!");
-      showErrorMessage("Preencha esta pergunta antes de prosseguir.");
+      showErrorMessage("Preencha a pergunta antes de prosseguir.");
     } else {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
