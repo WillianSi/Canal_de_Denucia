@@ -78,6 +78,9 @@ const Login = () => {
   const showErrorMessage = (message) => {
     setErrorMessage(message);
     setShowAlert(true);
+    setTimeout(() => {
+      setShowAlert(false);
+    }, 3000);
   };
 
   return (
