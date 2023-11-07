@@ -58,7 +58,20 @@ const Forms = () => {
   };
 
   const openModal = () => {
-    setModalOpen(true);
+    const lastQuestion = questions[currentQuestion];
+    const lastAnswer = answers[lastQuestion.id];
+  
+    if (lastQuestion.validation && (
+      (lastQuestion.tipo === "Dropdown" && lastAnswer.selectedOption === "") ||
+      (lastQuestion.tipo === "Arquivo" && lastAnswer.file === null) ||
+      (lastQuestion.tipo === "PerguntaAberta" && lastAnswer.answer === "")
+    )) {
+      setAlertColor("danger");
+      setAlertTitle("Atenção!");
+      showErrorMessage("Preencha a última pergunta antes de prosseguir.");
+    } else {
+      setModalOpen(true);
+    }
   };
 
   const showErrorMessage = (message) => {
@@ -81,20 +94,21 @@ const Forms = () => {
     const currentAnswer = answers[questions[currentQuestion].id];
 
     if (
-      (questions[currentQuestion].tipo === "Dropdown" &&
-        currentAnswer.selectedOption !== "") ||
-      (questions[currentQuestion].tipo === "Arquivo" &&
-        currentAnswer.file !== null) ||
-      (questions[currentQuestion].tipo === "PerguntaAberta" &&
-        currentAnswer.answer !== "")
+      questions[currentQuestion].validation && // Check if the question is mandatory
+      ((questions[currentQuestion].tipo === "Dropdown" &&
+        currentAnswer.selectedOption === "") ||
+        (questions[currentQuestion].tipo === "Arquivo" &&
+          currentAnswer.file === null) ||
+        (questions[currentQuestion].tipo === "PerguntaAberta" &&
+          currentAnswer.answer === ""))
     ) {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-      }
-    } else {
       setAlertColor("danger");
       setAlertTitle("Atenção!");
       showErrorMessage("Preencha esta pergunta antes de prosseguir.");
+    } else {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+      }
     }
   };
 

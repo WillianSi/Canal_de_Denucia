@@ -26,7 +26,7 @@ const Logout = (props) => {
           className="close"
           data-dismiss="modal"
           type="button"
-          onClick={toggle} // Use a função toggle para fechar o modal
+          onClick={toggle}
         >
           <span aria-hidden={true}>×</span>
         </button>
@@ -49,7 +49,7 @@ const Logout = (props) => {
           color="default"
           data-dismiss="modal"
           type="button"
-          onClick={toggle} // Use a função toggle para fechar o modal
+          onClick={toggle}
         >
           Não
         </Button>
