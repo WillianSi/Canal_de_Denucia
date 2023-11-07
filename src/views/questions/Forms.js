@@ -94,7 +94,7 @@ const Forms = () => {
     const currentAnswer = answers[questions[currentQuestion].id];
 
     if (
-      questions[currentQuestion].validation && // Check if the question is mandatory
+      questions[currentQuestion].validation && 
       ((questions[currentQuestion].tipo === "Dropdown" &&
         currentAnswer.selectedOption === "") ||
         (questions[currentQuestion].tipo === "Arquivo" &&
