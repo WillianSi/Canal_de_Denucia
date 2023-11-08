@@ -312,7 +312,7 @@ const Forms = () => {
   return (
     <>
       <Auth>
-        <Col lg="5" md="7">
+        <Col lg="7" md="7">
           <Card className="bg-secondary shadow border-0">
             <CardHeader className="bg-transparent">
               <div className="header-body text-center">
@@ -368,7 +368,7 @@ const Forms = () => {
                             />
                             <div className="input-group-append">
                               <Button
-                                color="primary"
+                                color="default"
                                 type="button"
                                 onClick={() => fileInput.current.click()}
                               >
@@ -398,7 +398,7 @@ const Forms = () => {
                       <Col md="6">
                         <FormGroup>
                           <Button
-                            color="primary"
+                            color="default"
                             type="button"
                             onClick={previousQuestion}
                             block
@@ -426,7 +426,7 @@ const Forms = () => {
                             </Button>
                           ) : (
                             <Button
-                              color="primary"
+                              color="default"
                               type="button"
                               onClick={nextQuestion}
                               block

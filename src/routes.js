@@ -4,7 +4,7 @@ var routes = [
   {
     path: "/index/:incidentId",
     name: "Home",
-    icon: "ni ni-tv-2 text-primary",
+    icon: "ni ni-tv-2 text-default",
     component: <Index />,
     layout: "/admin",
   },

@@ -103,7 +103,7 @@ const Login = () => {
                 )}
               </div>
             </CardHeader>
-            <CardBody className="px-lg-5 py-lg-5">
+            <CardBody className="px-lg-5 ">
               <Form role="form">
                 <FormGroup className="mb-3">
                   <InputGroup className="input-group-alternative">
@@ -141,7 +141,7 @@ const Login = () => {
                 <div className="text-center">
                   <Button
                     className="my-3"
-                    color="primary"
+                    color="default"
                     type="button"
                     onClick={handleSignIn}
                   >

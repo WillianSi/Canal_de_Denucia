@@ -39,7 +39,7 @@ const Home = () => {
                     <FormGroup>
                     <Link to="/login">
                         <Button
-                          color="primary"
+                          color="default"
                           block
                           type="button"
                         >

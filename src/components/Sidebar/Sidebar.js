@@ -118,31 +118,14 @@ const Sidebar = (props) => {
               </Col>
             </Row>
           </div>
-          {/* Form */}
-          <Form className="mt-4 mb-3 d-md-none">
-            <InputGroup className="input-group-rounded input-group-merge">
-              <Input
-                aria-label="Search"
-                className="form-control-rounded form-control-prepended"
-                placeholder="Pesquisar"
-                id="search"
-                type="search"
-              />
-              <InputGroupAddon addonType="prepend">
-                <InputGroupText>
-                  <span className="fa fa-search" />
-                </InputGroupText>
-              </InputGroupAddon>
-            </InputGroup>
-          </Form>
           <Nav navbar>
           {createLinks(routes)}
           <NavItem key="logout" className="mx-5 mt-3">
             <Button
-              className="btn btn-link border"
+              className="btn border"
               onClick={toggleLogoutModal}
             >
-              <i className="ni ni-user-run mr-2" />
+              <i className="ni ni-user-run mr-2 text-default" />
               Sair
             </Button>
           </NavItem>

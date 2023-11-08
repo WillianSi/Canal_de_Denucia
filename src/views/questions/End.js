@@ -28,7 +28,7 @@ const End = (props) => {
   };
 
   const handleCopy = () => {
-    const textToCopy = `Nome de Usuário: ${username}\nSenha: ${password}`;
+    const textToCopy = `Usuário: ${username}\nSenha: ${password}`;
 
     const textArea = document.createElement("textarea");
     textArea.value = textToCopy;
@@ -88,7 +88,7 @@ const End = (props) => {
                 Seu usuário e senha para acompanhamento da denuncia:
               </p>
               <p>
-                <strong>Nome de Usuário:</strong> {username}
+                <strong>Usuário:</strong> {username}
                 <br />
                 <strong>Senha:</strong> {password}
               </p>

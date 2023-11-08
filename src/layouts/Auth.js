@@ -21,7 +21,7 @@ const Auth = ({ children }) => {
   return (
     <>
       <div className="main-content" ref={mainContent}>
-        <div className="header bg-gradient-info py-7 py-lg-8 mb-2">
+        <div className="header bg-gradient-purple py-7 py-lg-8 mb-2">
           <div className="separator separator-bottom separator-skew zindex-100">
             <svg
               xmlns="http://www.w3.org/2000/svg"
