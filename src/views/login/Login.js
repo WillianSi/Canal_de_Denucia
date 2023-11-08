@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Auth from "layouts/Auth.js";
 import { Navigate } from "react-router-dom";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
@@ -22,6 +22,7 @@ import {
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [redirectTo, setRedirectTo] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -40,8 +41,17 @@ const Login = () => {
     marginBottom: "20px",
   };
 
+  useEffect(() => {
+    if (loading) {
+      setAlertColor("default");
+      setAlertTitle("Aguarde:");
+      showErrorMessage("Conectando...");
+    }
+  }, [loading]);
+
   const handleSignIn = async () => {
     try {
+      setLoading(true);
       const db = getFirestore();
       const userDoc = doc(db, "users", username);
       const userDocSnapshot = await getDoc(userDoc);
