@@ -5,11 +5,6 @@ import Logout from '../../views/login/Logout.js';
 import {
   Button,
   Collapse,
-  Form,
-  Input,
-  InputGroupAddon,
-  InputGroupText,
-  InputGroup,
   NavbarBrand,
   Navbar,
   NavItem,
