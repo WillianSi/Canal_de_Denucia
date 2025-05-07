@@ -2,12 +2,12 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBwsNLIyGs1rqTD-_RBSajt6HLDvH0smV0",
-  authDomain: "canal-de-denuncias-2304d.firebaseapp.com",
-  projectId: "canal-de-denuncias-2304d",
-  storageBucket: "canal-de-denuncias-2304d.appspot.com",
-  messagingSenderId: "701935506559",
-  appId: "1:701935506559:web:e7cc7b3c13e27b870b9b4a"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY_CANAL,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN_CANAL,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID_CANAL,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_CANAL,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID_CANAL,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID_CANAL
 };
 
 const app = initializeApp(firebaseConfig);
